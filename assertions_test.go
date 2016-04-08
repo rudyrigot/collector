@@ -8,7 +8,7 @@ func assertEqual(t *testing.T, in interface{}, want interface{}, message string)
 	}
 }
 
-func assertIntArrayEqual(t *testing.T, in []int, want []int, message string) {
+func assertStringArrayEqual(t *testing.T, in []string, want []string, message string) {
 	if len(in) != len(want) {
 		t.Errorf("[%#v != %#v] %s", in, want, message)
 	} else {
