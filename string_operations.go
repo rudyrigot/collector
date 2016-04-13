@@ -1,19 +1,46 @@
 package collector
 
 const (
-	mapOp    = iota
-	selectOp = iota
-	eachOp   = iota
+	transformOp = iota
+	filterOp    = iota
+	eachOp      = iota
 )
 
 type operation struct {
-	operation int
-	lbd       func(...string) string
+	op  int
+	lbd func(...string) string
 }
 
-type operationsOrError struct {
+type operationSet struct {
 	alreadyPerformed bool
-	initialArray     []interface{}
-	ops              []operation
-	err              error
+	initialArray     []string
+	ops              []*operation
+}
+
+// Transform (which may called "map" in other languages) allows to apply a function on each
+// element of an array, separately.
+// The variadic parameter in the function should only expect one string.
+func (opSet *operationSet) Transform(f func(...string) string) *operationSet {
+	op := operation{op: transformOp, lbd: f}
+	opSet.ops = append(opSet.ops, &op)
+	return opSet
+}
+
+func (opSet *operationSet) Into(s *[]string) error {
+	// Duplicating the slice
+	buffer := make([]string, len(opSet.initialArray))
+	copy(buffer, opSet.initialArray)
+
+	// Performing the operations
+	for i, elem := range buffer {
+		for _, op := range opSet.ops {
+			if op.op == transformOp {
+				buffer[i] = op.lbd(elem)
+			}
+		}
+	}
+
+	// Returning the results
+	s = &buffer
+	return nil
 }
